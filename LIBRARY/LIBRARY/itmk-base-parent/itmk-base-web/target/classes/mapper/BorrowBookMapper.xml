@@ -1,0 +1,211 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itmk.web.book_borrow.mapper.BorrowBookMapper">
+    <select id="getBorrowList" resultType="com.itmk.web.book_borrow.entity.ReturnBook">
+        select b.barcode,sb.book_code,b.borrow_id,b.book_id,sb.book_name,sb.book_place_num, sr.username,sr.learn_num,sr.class_name,sr.phone,b.borrow_time, b.expect_return_time, (TO_DAYS(DATE_ADD(b.borrow_time, INTERVAL 10 DAY)) - TO_DAYS(NOW())) as remainDays, b.return_time, b.borrow_status
+        from  borrow_book as b left join sys_books as sb on b.book_id = sb.book_id
+              left join sys_reader as sr  on b.reader_id = sr.reader_id
+        where 1=1
+        <if test="parm.username != null and parm.username !=''">
+            and sr.username =#{parm.username}
+        </if>
+        <if test="parm.borrowStatus != null and parm.borrowStatus !=''">
+            and b.borrow_status =#{parm.borrowStatus}
+        </if>
+        order by b.borrow_time desc
+    </select>
+    <select id="getReaderBorrowList" resultType="com.itmk.web.book_borrow.entity.ReturnBook">
+        select b.barcode,sb.book_code,sr.reader_id,b.borrow_id,b.book_id,sb.book_name,sb.book_place_num, sr.username,sr.learn_num,sr.class_name,sr.phone,b.borrow_time, b.expect_return_time, (TO_DAYS(DATE_ADD(b.borrow_time, INTERVAL 10 DAY)) - TO_DAYS(NOW())) as remainDays,b.return_time,b.borrow_status
+        from  borrow_book as b left join sys_books as sb on b.book_id = sb.book_id
+        left join sys_reader as sr  on b.reader_id = sr.reader_id
+        where 1=1
+        <if test="parm.userId != null and parm.userId !=''">
+            and sr.reader_id =#{parm.userId}
+        </if>
+        <if test="parm.username != null and parm.username !=''">
+            and sr.username =#{parm.username}
+        </if>
+        <if test="parm.borrowStatus != null and parm.borrowStatus !=''">
+            and b.borrow_status =#{parm.borrowStatus}
+        </if>
+        order by b.borrow_time desc
+    </select>
+
+    <select id="getLookBorrowList" resultType="com.itmk.web.book_borrow.entity.LookBorrow">
+        select t.* from(
+        select sb.book_code,b.borrow_id,b.book_id,sb.book_name,sb.book_place_num,b.barcode,
+        sr.username,sr.learn_num,sr.class_name,sr.phone,b.borrow_time, b.expect_return_time, (TO_DAYS(DATE_ADD(b.borrow_time, INTERVAL 10 DAY)) - TO_DAYS(NOW())) as remainDays, b.return_time, b.borrow_status,b.apply_status,b.return_status,b.excepion_text,b.apply_text,
+        case when now() &lt; b.expect_return_time  then '1' else '0' end as time_status
+        from  borrow_book as b left join sys_books as sb on b.book_id = sb.book_id
+        left join sys_reader as sr  on b.reader_id = sr.reader_id
+        order by b.borrow_time desc) AS t
+        where 1=1
+        <if test="parm.username != null and parm.username !=''">
+            and t.username =#{parm.username}
+        </if>
+        <if test="parm.borrowStatus != null and parm.borrowStatus !=''">
+            and t.borrow_status =#{parm.borrowStatus}
+        </if>
+        <if test="parm.learnNum != null and parm.learnNum !=''">
+            and t.learn_num  like CONCAT('%',#{parm.learnNum},'%')
+        </if>
+        <if test="parm.bookName != null and parm.bookName !=''">
+            and t.book_name  like CONCAT('%',#{parm.bookName},'%')
+        </if>
+        <if test="parm.applyStatus != null and parm.applyStatus !=''">
+            and t.apply_status =#{parm.applyStatus}
+        </if>
+        <if test="parm.returnStatus != null and parm.returnStatus !=''">
+            and t.return_status =#{parm.returnStatus}
+        </if>
+        <if test="parm.timeStatus != null and parm.timeStatus !=''">
+            and t.time_status =#{parm.timeStatus}
+        </if>
+        order by t.borrow_time desc
+    </select>
+    <select id="getReaderLookBorrowList" resultType="com.itmk.web.book_borrow.entity.LookBorrow">
+        select t.* from (
+        select  sb.book_code,b.reader_id,b.borrow_id,b.book_id,sb.book_name,sb.book_place_num,b.barcode,
+        sr.username,sr.learn_num,sr.class_name,sr.phone,b.borrow_time, b.expect_return_time, (TO_DAYS(expect_return_time) - TO_DAYS(NOW())) as remainDays,b.return_time,b.borrow_status,
+        b.apply_status,b.return_status,b.excepion_text,b.apply_text,
+        case when now() &lt; b.expect_return_time then '1' else '0' end as time_status
+        from borrow_book as b left join sys_books as sb on b.book_id = sb.book_id
+        left join sys_reader as sr on sr.reader_id =  b.reader_id ) AS t
+        where 1=1
+        <if test="parm.userId != null and parm.userId !=''">
+            and t.reader_id =#{parm.userId}
+        </if>
+        <if test="parm.username != null and parm.username !=''">
+            and t.username =#{parm.username}
+        </if>
+        <if test="parm.borrowStatus != null and parm.borrowStatus !=''">
+            and t.borrow_status =#{parm.borrowStatus}
+        </if>
+        <if test="parm.learnNum != null and parm.learnNum !=''">
+            and t.learn_num  like CONCAT('%',#{parm.learnNum},'%')
+        </if>
+        <if test="parm.bookName != null and parm.bookName !=''">
+            and t.book_name  like CONCAT('%',#{parm.bookName},'%')
+        </if>
+        <if test="parm.applyStatus != null and parm.applyStatus !=''">
+            and t.apply_status =#{parm.applyStatus}
+        </if>
+        <if test="parm.returnStatus != null and parm.returnStatus !=''">
+            and t.return_status =#{parm.returnStatus}
+        </if>
+        <if test="parm.timeStatus != null and parm.timeStatus !=''">
+            and t.time_status =#{parm.timeStatus}
+        </if>
+        order by t.borrow_time desc
+    </select>
+    <select id="checkFine" resultType="int">
+        select count(*)
+        from sys_fines natural join borrow_book
+        where reader_id =#{readerId} and fine_status = '0'
+    </select>
+    <select id="getReaderBorrowNum" resultType="int">
+        select count(*)
+        from borrow_book
+        where reader_id =#{readerId} and borrow_status = '1'
+    </select>
+    <select id="getAllBorrowNum" resultType="int">
+        select count(*)
+        from borrow_book
+        where borrow_status = '1'
+    </select>
+    <select id="getAllExceptionNum" resultType="int">
+        select count(*)
+        from borrow_book
+        where borrow_status = '3'
+    </select>
+    <select id="getReaderHistoryBorrowNum" resultType="int">
+        select count(*)
+        from borrow_book
+        where reader_id =#{readerId}
+    </select>
+    <select id="getAllHistoryBorrowNum" resultType="int">
+        select count(*)
+        from borrow_book
+    </select>
+    <select id="concatBarcode" resultType="String">
+        select DISTINCT concat(b.book_code,'-', (select DISTINCT max(copy_num) from sys_bookcopies where book_id =#{bookId} and borrow_status = '0'))
+        from sys_books as b, sys_bookcopies as sb
+        where b.book_id = sb.book_id and b.book_id =#{bookId}
+    </select>
+    <select id="getBarcodeByBorrow" resultType="String">
+        select barcode
+        from borrow_book
+        where borrow_id =#{borrowId}
+    </select>
+
+    <select id="countDays" resultType="int">
+        select (TO_DAYS(NOW()) - TO_DAYS(bb.expect_return_time)) as countDays
+        from borrow_book as bb
+        where borrow_id =#{borrowId}
+    </select>
+    <select id="getPrice" resultType="float">
+        select book_price
+        from sys_books
+        where book_id =#{bookId}
+    </select>
+    <insert id="insertFineDue">
+        insert into sys_fines(borrow_id, fine_type, fine_fee)
+        values(#{parm.borrowId}, 0, #{parm.fineFee})
+    </insert>
+    <insert id="insertFineException">
+        insert into sys_fines(borrow_id, fine_type, fine_fee)
+        values(#{parm.borrowId}, 1, #{parm.fineFee})
+    </insert>
+
+    <update id="borrowBookCopy">
+        update sys_bookcopies
+        set borrow_status = '1'
+        where barcode =#{barcode}
+    </update>
+    <update id="returnBookCopy">
+        update sys_bookcopies
+        set borrow_status = '0'
+        where barcode =#{barcode}
+    </update>
+    <update id="exceptionBookCopy">
+        update sys_bookcopies
+        set borrow_status = '2'
+        where barcode =#{barcode}
+    </update>
+    <insert id="borrowBooks">
+        insert into borrow_book(book_id, barcode, reader_id, apply_status, borrow_status)
+        values(#{parm.bookId}, #{parm.barcode}, #{parm.readerId}, #{parm.applyStatus}, #{parm.borrowStatus})
+    </insert>
+    <update id="returnBooks">
+        update borrow_book
+        set borrow_status = '2', return_status='1', return_time = now()
+        where borrow_id =#{parm.borrowId}
+    </update>
+    <update id="exceptionBooks0">
+        update borrow_book
+        set return_status = '2', borrow_status = '3', return_time = now(), excepion_text =#{parm.exceptionText}
+        where borrow_id =#{parm.borrowId}
+    </update>
+    <update id="exceptionBooks1">
+        update borrow_book
+        set return_status = '3', borrow_status = '3', return_time = now(), excepion_text =#{parm.exceptionText}
+        where borrow_id =#{parm.borrowId}
+    </update>
+    <select id="getDamage" resultType="int">
+        select count(*)
+        from borrow_book
+        where return_status = '2'
+    </select>
+    <select id="getLost" resultType="int">
+        select count(*)
+        from borrow_book
+        where return_status = '3'
+    </select>
+    <select id="checkReserved" resultType="int">
+        select count(*)
+        from borrow_book
+        where borrow_status = '4' and reader_id = #{readerId}
+    </select>
+</mapper>

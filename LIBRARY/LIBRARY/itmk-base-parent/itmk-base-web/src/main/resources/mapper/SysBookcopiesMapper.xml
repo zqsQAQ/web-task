@@ -1,0 +1,124 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itmk.web.sys_bookcopies.mapper.SysBookcopiesMapper">
+    <select id="getCopyList" resultType="com.itmk.web.sys_bookcopies.entity.SysBookCopies">
+        select b.*, c.book_code, c.book_store
+        from sys_bookcopies as b, sys_books as c
+        where borrow_status = 0 and b.book_id = c.book_id
+        <if test="parm.bookId != null and parm.bookId !=''">
+            and b.book_id =#{parm.bookId}
+        </if>
+        <if test="parm.bookCode != null and parm.bookCode !=''">
+            and c.book_code like CONCAT('%',#{parm.bookCode},'%')
+        </if>
+        <if test="parm.barcode != null and parm.barcode !=''">
+            and b.barcode like CONCAT('%',#{parm.barcode},'%')
+        </if>
+            order by copy_num
+    </select>
+    <update id="borrowBook">
+        update sys_bookcopies
+        set borrow_status = '1'
+        where barcode =#{barcode}
+    </update>
+    <update id="returnBook">
+        update sys_bookcopies
+        set borrow_status = '0'
+        where barcode =#{barcode}
+    </update>
+    <update id="exceptionBook">
+        update sys_bookcopies
+        set borrow_status = '2'
+        where barcode =#{barcode}
+    </update>
+    <delete id="deleteBookCopy">
+        delete from sys_bookcopies
+        where book_id =#{bookId}
+    </delete>
+    <delete id="deleteBookCopyByBar">
+        delete from sys_bookcopies
+        where barcode =#{barcode}
+    </delete>
+    <select id="getCopyNum" resultType="int">
+        select count(*)
+        from sys_bookcopies
+        where book_id = #{bookId}
+    </select>
+    <select id="getBookIdByCode" resultType="Long">
+        select book_id
+        from sys_books
+        where book_code = #{bookCode}
+    </select>
+    <select id="getReaderId" resultType="Long">
+        select reader_id
+        from sys_reader
+        where username = #{username}
+    </select>
+    <select id="getBorrowIdByCode" resultType="Long">
+        select borrow_id
+        from borrow_book
+        where barcode = #{barcode} and borrow_status = '1'
+    </select>
+    <select id="getStatus" resultType="String">
+        select borrow_status
+        from sys_bookcopies
+        where barcode =#{barcode}
+    </select>
+    <update id="subBook">
+        update sys_books
+        set book_store = book_store - 1
+        where book_id = #{bookId} and book_store > 0
+    </update>
+    <update id="addBook">
+        update sys_books
+        set book_store = book_store + 1
+        where book_id = #{bookId}
+    </update>
+
+    <insert id="insertBorrow">
+        insert into borrow_book(book_id, barcode, reader_id, apply_status, borrow_status)
+        values(#{param.bookId},#{param.barcode},#{param.readerId},#{param.applyStatus},#{param.borrowStatus})
+    </insert>
+    <update id="updateReturn">
+        update borrow_book
+        set return_time = now(), return_status = '1', borrow_status = '2'
+        where borrow_id = #{borrowId} and borrow_status = '1'
+    </update>
+    <update id="updateException">
+        update borrow_book
+        set return_time = now(), return_status = #{param.returnStatus}, borrow_status = '3', excepion_text = #{param.exceptionText}
+        where borrow_id = #{param.borrowId} and borrow_status = '1'
+    </update>
+
+    <select id="getBookIdByBorrowId" resultType="Long">
+        select bookId
+        from borrow_book
+        where borrow_id =#{borrowId}
+    </select>
+    <select id="countDays" resultType="int">
+        select (TO_DAYS(NOW()) - TO_DAYS(bb.expect_return_time)) as countDays
+        from borrow_book as bb
+        where borrow_id =#{borrowId}
+    </select>
+    <select id="getPrice" resultType="float">
+        select book_price
+        from sys_books
+        where book_id =#{bookId}
+    </select>
+    <insert id="insertFineDue">
+        insert into sys_fines(borrow_id, fine_type, fine_fee)
+        values(#{parm.borrowId}, 0, #{parm.fineFee})
+    </insert>
+    <insert id="insertFineException">
+        insert into sys_fines(borrow_id, fine_type, fine_fee)
+        values(#{parm.borrowId}, 1, #{parm.fineFee})
+    </insert>
+
+    <select id="getAllCopyNum" resultType="int">
+        select count(*)
+        from sys_bookcopies
+    </select>
+
+</mapper>

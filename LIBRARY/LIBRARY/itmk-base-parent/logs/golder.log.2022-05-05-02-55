@@ -1,0 +1,6 @@
+2022-05-05 02:55:57 INFO  BooksApplication:55 - Starting BooksApplication using Java 1.8.0_251 on Huawei with PID 3900 (D:\Programme\IDEA\itmk-base-parent\itmk-base-web\target\classes started by HUAWEI in D:\Programme\IDEA\itmk-base-parent)
+2022-05-05 02:55:57 INFO  BooksApplication:666 - The following profiles are active: test
+2022-05-05 02:55:59 INFO  TomcatWebServer:108 - Tomcat initialized with port(s): 8089 (http)
+2022-05-05 02:55:59 INFO  ServletWebServerApplicationContext:289 - Root WebApplicationContext: initialization completed in 1716 ms
+2022-05-05 02:55:59 INFO  DruidDataSourceAutoConfigure:56 - Init DruidDataSource
+2022-05-05 02:55:59 INFO  DruidDataSource:985 - {dataSource-1} inited

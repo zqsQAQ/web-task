@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/itmk-base-common/itmk-base-common.iml" filepath="$PROJECT_DIR$/itmk-base-common/itmk-base-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/itmk-base-parent.iml" filepath="$PROJECT_DIR$/.idea/itmk-base-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/itmk-base-web/itmk-base-web.iml" filepath="$PROJECT_DIR$/itmk-base-web/itmk-base-web.iml" />
+    </modules>
+  </component>
+</project>

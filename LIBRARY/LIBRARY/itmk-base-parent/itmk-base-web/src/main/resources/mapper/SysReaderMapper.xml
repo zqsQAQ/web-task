@@ -1,0 +1,55 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itmk.web.sys_reader.mapper.SysReaderMapper">
+    <select id="checkUnreturn" resultType="int">
+        select count(*)
+        from borrow_book
+        where reader_id = #{readerId} and borrow_status = '1'
+    </select>
+    <select id="checkUnpaid" resultType="int">
+        select count(*)
+        from sys_fines natural join borrow_book
+        where reader_id = #{readerId} and fine_status = '0'
+    </select>
+    <select id="checkAllFines" resultType="int">
+        select count(*)
+        from sys_fines natural join borrow_book
+        where reader_id = #{readerId}
+    </select>
+
+    <select id="checkMemberNum" resultType="int">
+        select count(*)
+        from sys_reader
+    </select>
+
+    <select id="checkLastBorrow" resultType="String">
+        select book_name
+        from borrow_book natural join sys_books
+        where borrow_id = (select max(borrow_id) from borrow_book where reader_id = #{readerId})
+    </select>
+    <select id="checkLastReturn" resultType="String">
+        select book_name
+        from borrow_book natural join sys_books
+        where borrow_id = (select max(borrow_id) from borrow_book where reader_id = #{readerId} and borrow_status = '2')
+    </select>
+    <select id="countUndeletableGraduates" resultType="int">
+        select count(*)
+        from (select distinct sr.reader_id, sf.fine_status, bb.borrow_status, sr.entry_year from sys_reader as sr left join borrow_book as bb on sr.reader_id = bb.reader_id left join sys_fines as sf on bb.borrow_id = sf.borrow_id) as f
+        where (f.fine_status = '0' or f.borrow_status = '1') and f.entry_year = #{entryYear}
+    </select>
+    <delete id="deleteGraduates">
+        delete from sys_reader
+        where entry_year = #{entryYear} and reader_id NOT IN (
+	        select distinct f.reader_id
+	        from ( select sr.reader_id, sf.fine_status, bb.borrow_status, sr.entry_year from sys_reader as sr left join borrow_book as bb on sr.reader_id = bb.reader_id left join sys_fines as sf on bb.borrow_id = sf.borrow_id) as f
+	        where (f.fine_status = '0' or f.borrow_status = '1') and f.entry_year = #{entryYear}
+        )
+    </delete>
+    <select id="getReaderById" resultType="com.itmk.web.sys_reader.entity.SysReader">
+        select *
+        from sys_reader
+        where reader_id = #{readerId}
+    </select>
+</mapper>

@@ -1,0 +1,76 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itmk.web.sys_fines.mapper.SysFinesMapper">
+    <select id="getFineList" resultType="com.itmk.web.sys_fines.entity.SysFines">
+        select sf.*, bb.barcode, sr.reader_id, sr.username, sb.book_id, sb.book_name
+        from sys_fines as sf natural join borrow_book as bb natural join sys_reader as sr natural join sys_books as sb
+        where 1=1
+        <if test="parm.username != null and parm.username !=''">
+            and sr.username like CONCAT('%',#{parm.username},'%')
+        </if>
+        <if test="parm.fineType != null and parm.fineType !=''">
+            and sf.fine_type =#{parm.fineType}
+        </if>
+        <if test="parm.fineStatus != null and parm.fineStatus !=''">
+            and sf.fine_status =#{parm.fineStatus}
+        </if>
+    </select>
+    <select id="getReaderFineList" resultType="com.itmk.web.sys_fines.entity.SysFines">
+        select sf.*, bb.barcode, sr.reader_id, sr.username, sb.book_id, sb.book_name
+        from sys_fines as sf natural join borrow_book as bb natural join sys_reader as sr natural join sys_books as sb
+        where 1=1
+        <if test="parm.readerId != null and parm.readerId !=''">
+            and sr.reader_id =#{parm.readerId}
+        </if>
+        <if test="parm.username != null and parm.username !=''">
+            and sr.username like CONCAT('%',#{parm.username},'%')
+        </if>
+        <if test="parm.fineType != null and parm.fineType !=''">
+            and sf.fine_type =#{parm.fineType}
+        </if>
+        <if test="parm.fineStatus != null and parm.fineStatus !=''">
+            and sf.fine_status =#{parm.fineStatus}
+        </if>
+    </select>
+    <update id="payFine">
+        update sys_fines
+        set pay_time = now(), fine_status = '1'
+        where fine_id = #{fineId}
+    </update>
+
+    <select id="getUnpaidNum" resultType="int">
+        select count(*)
+        from sys_fines
+        where fine_status = '0'
+    </select>
+    <select id="getPaidNum" resultType="int">
+        select count(*)
+        from sys_fines
+        where fine_status = '1'
+    </select>
+    <select id="getUnpaidFee" resultType="float">
+        select sum(fine_fee)
+        from sys_fines
+        where fine_status = '0'
+    </select>
+    <select id="getPaidFee" resultType="float">
+        select sum(fine_fee)
+        from sys_fines
+        where fine_status = '1'
+    </select>
+
+    <select id="getReaderUnpaidFee" resultType="float">
+        select sum(fine_fee)
+        from sys_fines natural join borrow_book
+        where fine_status = '0' and reader_id = #{readerId}
+    </select>
+    <select id="getReaderTotalFee" resultType="float">
+        select sum(fine_fee)
+        from sys_fines natural join borrow_book
+        where reader_id = #{readerId}
+    </select>
+
+</mapper>
+
